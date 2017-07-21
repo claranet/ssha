@@ -8,10 +8,10 @@ WHEEL := dist/$(PY_NAME)-$(VERSION)-py2.py3-none-any.whl
 .PHONY: all
 all: build
 
-$(SDIST): setup.py
+$(SDIST):
 	python setup.py sdist
 
-$(WHEEL): setup.py
+$(WHEEL):
 	python setup.py bdist_wheel
 
 .PHONY: build

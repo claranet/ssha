@@ -1,25 +1,23 @@
 import boto3
+import boto3_session_cache
+import botocore.session
 
 from . import config
 
-_sessions = []
-_clients = {}
 
-
-def _session():
-    if not _sessions:
-        aws = config.get('aws') or {}
-        _sessions.append(boto3.Session(**aws))
-    return _sessions[0]
+def session():
+    aws_config = config.get('aws') or {}
+    profile = aws_config.pop('profile_name', None)
+    botocore_session = botocore.session.Session(profile=profile)
+    resolver = botocore_session.get_component('credential_provider')
+    provider = resolver.get_provider('assume-role')
+    provider.cache = boto3_session_cache.JSONFileCache()
+    return boto3.Session(botocore_session=botocore_session, **aws_config)
 
 
 def ec2():
-    if 'ec2' not in _clients:
-        _clients['ec2'] = _session().client('ec2')
-    return _clients['ec2']
+    return session().client('ec2')
 
 
 def ssm():
-    if 'ssm' not in _clients:
-        _clients['ssm'] = _session().client('ssm')
-    return _clients['ssm']
+    return session().client('ssm')
