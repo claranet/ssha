@@ -20,6 +20,10 @@ class Menu(object):
         self.position = 0
         self.instances = instances
 
+    def addstr(self, y, x, str, attr=None):
+        if y + 1 < self.max_y and x + len(str) < self.max_x:
+            self.window.addstr(y, x, str, attr)
+
     def navigate(self, n):
         self.position += n
         if self.position < 0:
@@ -38,9 +42,11 @@ class Menu(object):
             self.window.refresh()
             curses.doupdate()
 
+            self.max_y, self.max_x = self.window.getmaxyx()
+
             # Display the menu title.
-            self.window.addstr(1, 2, self.title, curses.A_NORMAL)
-            self.window.addstr(2, 2, '-' * len(self.title), curses.A_NORMAL)
+            self.addstr(1, 2, self.title, curses.A_NORMAL)
+            self.addstr(2, 2, '-' * len(self.title), curses.A_NORMAL)
 
             for index, instance in enumerate(self.instances):
 
@@ -52,10 +58,10 @@ class Menu(object):
 
                 # Display the instance.
                 msg = _get_label(instance)
-                self.window.addstr(3 + index, 2, msg, mode)
+                self.addstr(3 + index, 2, msg, mode)
 
                 # Write out spaces to handle when a message becomes shorter.
-                self.window.addstr(
+                self.addstr(
                     3 + index,
                     2 + len(msg),
                     ' ' * 100,
@@ -105,7 +111,4 @@ def choose_instance(instances, search):
         instances = [inst for inst in instances if search.lower() in _get_label(inst).lower()]
     if len(instances) == 1 and search:
         return instances[0]
-    try:
-        return curses.wrapper(_display, instances)
-    except KeyboardInterrupt:
-        return None
+    return curses.wrapper(_display, instances)

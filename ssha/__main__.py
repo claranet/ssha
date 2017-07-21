@@ -14,13 +14,16 @@ args = parser.parse_args()
 
 config.load(args.config, verbose=args.verbose)
 
-instances = ec2.find_instances()
-if instances:
-    instance = menu.choose_instance(instances, args.search)
-    if instance:
-        bastion = ec2.find_bastion(instance, instances)
-        if config.get('ssm'):
-            ssm.add_ssh_key(instance, bastion)
-        ssh.connect(instance, bastion)
-else:
-    print('No matching instances found')
+try:
+    instances = ec2.find_instances()
+    if instances:
+        instance = menu.choose_instance(instances, args.search)
+        if instance:
+            bastion = ec2.find_bastion(instance, instances)
+            if config.get('ssm'):
+                ssm.add_ssh_key(instance, bastion)
+            ssh.connect(instance, bastion)
+    else:
+        print('No matching instances found')
+except KeyboardInterrupt:
+    pass

@@ -1,3 +1,4 @@
+import copy
 import subprocess
 import sys
 import toml
@@ -23,12 +24,16 @@ def _exec_all(data):
 
 
 def get(key):
+
     keys = key.split('.')
     value = _config
     for key in keys:
         value = value.get(key)
         if value is None:
             return None
+
+    if isinstance(value, (dict, list)):
+        value = copy.deepcopy(value)
 
     return _exec_all(value)
 

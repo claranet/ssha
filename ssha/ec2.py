@@ -14,7 +14,9 @@ def _instance_sort_key(instance):
     for field in config.get('display.sort') or ['InstanceId']:
         value = instance
         for key in field.split('.'):
-            value = value[key]
+            value = value.get(key)
+            if not value:
+                break
         result.append(value or '')
     return result
 
