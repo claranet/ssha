@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='ssha',
-    version='0.3.0',
+    version='0.4.0',
     description='SSH into AWS EC2 instances',
     author='Raymond Butcher',
     author_email='ray.butcher@claranet.uk',
@@ -19,6 +19,6 @@ setup(
     install_requires=(
         'boto3',
         'boto3-session-cache',
-        'toml',
+        'toml.py',
     ),
 )

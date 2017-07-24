@@ -1,10 +1,8 @@
 import copy
-import os
+import re
 import subprocess
-import sys
-import toml
 
-from . import errors
+from . import errors, settings
 
 
 _config = {}
@@ -16,6 +14,8 @@ def _exec(command):
 
 def _exec_all(data):
     if isinstance(data, basestring):
+        for var in re.findall('\$\{(.+?)\}', data):
+            data = data.replace('${' + var + '}', get(var))
         if data.startswith('$(') and data.endswith(')'):
             data = _exec(data[2:-1])
     elif isinstance(data, dict):
@@ -23,43 +23,6 @@ def _exec_all(data):
             data[key] = _exec_all(value)
     elif isinstance(data, list):
         data = [_exec_all(item) for item in data]
-    return data
-
-
-def _find_dot_files(path=None):
-
-    if path:
-        if os.path.isfile(path):
-            path = os.path.dirname(path)
-    else:
-        path = os.getcwd()
-    path = os.path.realpath(path)
-
-    paths = []
-    while path and path != '/':
-        dot_path = os.path.join(path, '.ssha')
-        if os.path.isfile(dot_path):
-            paths.append(dot_path)
-        path = os.path.dirname(path)
-    return paths
-
-
-def _load(path):
-    try:
-        with open(path) as config_file:
-            data = toml.load(config_file)
-    except IOError as error:
-        errors.string_exit('Error reading config: {}'.format(error))
-    except Exception as error:
-        errors.string_exit('Error parsing config: {}'.format(error))
-
-    # Make [configs] paths relative to the config file.
-    for key in data.get('configs') or []:
-        data['configs'][key] = os.path.join(
-            os.path.dirname(path),
-            data['configs'][key],
-        )
-
     return data
 
 
@@ -89,21 +52,23 @@ def get(key):
     return _exec_all(value)
 
 
-def load(path, **defaults):
-    _config.update(defaults)
+def load(name):
+    """
+    Loads a config from the settings.
 
-    # Load all of the .ssha config files first to get the [configs] mappings.
-    dot_configs = {}
-    for dot_path in _find_dot_files():
-        _merge(dot_configs, _load(dot_path))
-    _merge(_config, dot_configs)
+    """
 
-    # If there is a mapping for this path then use it.
-    configs = get('configs') or {}
-    path = configs.get(path) or path
+    _config.update(settings.all())
+    config_specific_settings = _config.pop('config', None) or {}
 
-    # Now load the specified config file.
-    _merge(_config, _load(path))
+    if name:
+        if name not in names():
+            errors.string_exit('Config {} is not defined in the .ssha file'.format(name))
+        if name in config_specific_settings:
+            _merge(_config, config_specific_settings[name])
+        _merge(_config, {'config': {'name': name}})
 
-    # Now load the .ssha configs again so any of their values take priority.
-    _merge(_config, dot_configs)
+
+def names():
+    ssha_settings = settings.all().get('ssha') or {}
+    return ssha_settings.get('configs') or []
