@@ -92,7 +92,7 @@ class Menu(object):
                 self.navigate(1)
             elif key in (81, 113):
                 # Either q or Q was pressed.
-                return None
+                raise KeyboardInterrupt
 
         self.window.clear()
         self.panel.hide()
@@ -106,9 +106,10 @@ def _display(screen, items, title=None):
     return menu.display()
 
 
-def choose_config():
-    names = config.names()
-    if len(names) > 1:
+def choose_config(names, search):
+    if search:
+        return search
+    elif len(names) > 1:
         items = [Item(label=name, value=name) for name in names]
         return curses.wrapper(_display, items)
     elif names:

@@ -4,7 +4,7 @@ from setuptools import setup
 
 setup(
     name='ssha',
-    version='0.4.0',
+    version='0.4.1',
     description='SSH into AWS EC2 instances',
     author='Raymond Butcher',
     author_email='ray.butcher@claranet.uk',
