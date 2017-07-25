@@ -63,7 +63,7 @@ def load(name):
 
     if name:
         if name not in names():
-            errors.string_exit('Config {} is not defined in the .ssha file'.format(name))
+            errors.string_exit('config {} not found in .ssha file'.format(name))
         if name in config_specific_settings:
             _merge(_config, config_specific_settings[name])
         _merge(_config, {'config': {'name': name}})

@@ -15,7 +15,10 @@ try:
     args = parser.parse_args()
 
     settings.load(verbose=args.verbose)
-    config.load(args.config or menu.choose_config())
+
+    configs = config.names()
+    config_name = menu.choose_config(configs, args.config)
+    config.load(config_name)
 
     instances = ec2.discover_instances()
     instance = menu.choose_instance(instances, args.search)
