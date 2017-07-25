@@ -7,10 +7,9 @@ from botocore.exceptions import ClientError
 from . import aws, config, errors
 
 
-def _send_run_command(instance_ids):
+def _send_command(instance_ids):
 
-    if config.get('verbose'):
-        print('Sending SSM command')
+    print('[ssha] ssm send command to {}'.format(' and '.join(instance_ids)))
 
     ssm = aws.ssm()
 
@@ -49,21 +48,7 @@ def _wait_for_command(instance_ids, command_id):
         if result['Status'] != 'Success':
             errors.json_exit(result)
 
-
-def add_ssh_key(instance, bastion):
-
-    instance_ids = [instance['InstanceId']]
-    if bastion:
-        instance_ids.append(bastion['InstanceId'])
-
-    command_id = _send_run_command(
-        instance_ids=instance_ids,
-    )
-
-    _wait_for_command(
-        instance_ids=instance_ids,
-        command_id=command_id,
-    )
+        print('[ssha] ssm command finished on {}'.format(instance_id))
 
 
 def find_instances():
@@ -75,3 +60,19 @@ def find_instances():
         errors.json_exit(response)
 
     return response['InstanceInformationList']
+
+
+def send_command(instance, bastion):
+
+    instance_ids = [instance['InstanceId']]
+    if bastion:
+        instance_ids.append(bastion['InstanceId'])
+
+    command_id = _send_command(
+        instance_ids=instance_ids,
+    )
+
+    _wait_for_command(
+        instance_ids=instance_ids,
+        command_id=command_id,
+    )

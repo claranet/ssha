@@ -5,8 +5,13 @@ import os
 from . import config
 
 
-def _get_hostname(instance):
-    return instance.get('PublicIpAddress') or instance['PrivateIpAddress']
+def _get_address(instance):
+    hostname = instance.get('PublicIpAddress') or instance['PrivateIpAddress']
+    username = config.get('ssh.username')
+    if username:
+        return username + '@' + hostname
+    else:
+        return hostname
 
 
 def connect(instance, bastion):
@@ -16,12 +21,15 @@ def connect(instance, bastion):
     if config.get('verbose'):
         command += ['-v']
 
+    identity_file = config.get('ssh.identity_file')
+    if identity_file:
+        command += ['-i', identity_file]
+
     if bastion:
-        command += ['-A', '-t', _get_hostname(bastion), 'ssh']
+        command += ['-A', '-t', _get_address(bastion), 'ssh']
 
-    command += [_get_hostname(instance)]
+    command += [_get_address(instance)]
 
-    if config.get('verbose'):
-        print('Running {}'.format(' '.join(command)))
+    print('[ssha] running {}'.format(' '.join(command)))
 
     os.execlp('ssh', *command)
