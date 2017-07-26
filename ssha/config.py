@@ -26,6 +26,15 @@ def _exec_all(data):
     return data
 
 
+def _get(key, default=None):
+    value = _config
+    for key in key.split('.'):
+        value = value.get(key)
+        if not value:
+            break
+    return value or default
+
+
 def _merge(target, source):
     for key in source:
         if key in target:
@@ -37,14 +46,24 @@ def _merge(target, source):
             target[key] = source[key]
 
 
-def get(key):
+def add(name, value):
+    data = {}
+    here = data
+    last_key = name
+    for key in name.split('.'):
+        last = here
+        here[key] = {}
+        here = here[key]
+    last[key] = value
+    _merge(_config, data)
 
-    keys = key.split('.')
-    value = _config
-    for key in keys:
-        value = value.get(key)
-        if value is None:
-            return None
+
+def get(key, default=None):
+
+    value = _get(key, default)
+
+    if not value:
+        return value
 
     if isinstance(value, (dict, list)):
         value = copy.deepcopy(value)
@@ -60,13 +79,18 @@ def load(name):
 
     _config.update(settings.all())
     config_specific_settings = _config.pop('config', None) or {}
-
     if name:
         if name not in names():
             errors.string_exit('config {} not found in .ssha file'.format(name))
         if name in config_specific_settings:
-            _merge(_config, config_specific_settings[name])
-        _merge(_config, {'config': {'name': name}})
+            _config.update(config_specific_settings[name])
+        add('config.name', name)
+
+    if not _get('ssh.username'):
+        add('ssh.username', '$(whoami)')
+
+    if _get('bastion') and not _get('ssh.proxy_command'):
+        add('ssh.proxy_command', 'ssh -W %h:%p ${bastion.address}')
 
 
 def names():
