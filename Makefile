@@ -23,7 +23,10 @@ install: $(WHEEL)
 
 .PHONY: uninstall
 uninstall:
-	pip uninstall $(NAME)
+	if pip show $(NAME) > /dev/null; then pip uninstall $(NAME) --yes; fi
+
+.PHONY: reinstall
+reinstall: uninstall clean install
 
 .PHONY: upload
 upload: $(SDIST) $(WHEEL)
