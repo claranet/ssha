@@ -1,8 +1,8 @@
 from __future__ import print_function
 
 import copy
+import hcl
 import os
-import toml
 
 from . import errors
 
@@ -26,7 +26,7 @@ def _find_settings_path():
 def _load(path):
     try:
         with open(path) as settings_file:
-            return toml.loads(settings_file.read())
+            return hcl.load(settings_file)
     except IOError as error:
         errors.string_exit('Error reading settings: {}'.format(error))
     except Exception as error:
