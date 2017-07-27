@@ -22,6 +22,6 @@ setup(
     install_requires=(
         'boto3',
         'boto3-session-cache',
-        'toml.py',
+        'pyhcl',
     ),
 )
