@@ -8,7 +8,7 @@ _instances = []
 
 def _describe_instances():
 
-    ec2 = aws.ec2()
+    ec2 = aws.client('ec2')
 
     print('[ssha] discovering ec2 instances')
 

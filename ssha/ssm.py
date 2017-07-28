@@ -9,14 +9,20 @@ from . import aws, config, errors
 
 def _send_command(instance_ids):
 
-    print('[ssha] ssm send command to {}'.format(' and '.join(instance_ids)))
+    document_name = config.get('ssm.document.name')
+    parameters = config.get('ssm.parameters')
 
-    ssm = aws.ssm()
+    print('[ssha] ssm send {document} to {instances}'.format(
+        document=document_name,
+        instances=' and '.join(instance_ids),
+    ))
+
+    ssm = aws.client('ssm')
 
     result = ssm.send_command(
         InstanceIds=instance_ids,
-        DocumentName=config.get('ssm.document_name'),
-        Parameters=config.get('ssm.parameters'),
+        DocumentName=document_name,
+        Parameters=parameters,
     )
 
     try:
@@ -29,7 +35,7 @@ def _send_command(instance_ids):
 
 def _wait_for_command(instance_ids, command_id):
 
-    ssm = aws.ssm()
+    ssm = aws.client('ssm')
 
     for instance_id in instance_ids:
 
@@ -53,7 +59,7 @@ def _wait_for_command(instance_ids, command_id):
 
 def find_instances():
 
-    ssm = aws.ssm()
+    ssm = aws.client('ssm')
 
     response = ssm.describe_instance_information()
     if response['ResponseMetadata']['HTTPStatusCode'] != 200:
