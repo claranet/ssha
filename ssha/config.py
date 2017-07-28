@@ -55,7 +55,7 @@ def add(name, value):
         here[key] = {}
         here = here[key]
     last[key] = value
-    _merge(_config, data)
+    update(data)
 
 
 def get(key, default=None):
@@ -77,13 +77,14 @@ def load(name):
 
     """
 
-    _config.update(settings.all())
+    update(settings.all())
+
     config_specific_settings = _config.pop('config', None) or {}
     if name:
         if name not in names():
             errors.string_exit('config {} not found in .ssha file'.format(name))
         if name in config_specific_settings:
-            _config.update(config_specific_settings[name])
+            update(config_specific_settings[name])
         add('config.name', name)
 
     if not _get('ssh.username'):
@@ -92,7 +93,18 @@ def load(name):
     if _get('bastion') and not _get('ssh.proxy_command'):
         add('ssh.proxy_command', 'ssh -W %h:%p ${bastion.address}')
 
+    iam_group_specific_settings = get('iam.group')
+    if iam_group_specific_settings:
+        from . import iam
+        for group in iam.groups():
+            if group in iam_group_specific_settings:
+                update(iam_group_specific_settings[group])
+
 
 def names():
     ssha_settings = settings.all().get('ssha') or {}
     return ssha_settings.get('configs') or []
+
+
+def update(data):
+    _merge(_config, data)
