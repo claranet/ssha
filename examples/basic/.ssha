@@ -1,0 +1,30 @@
+/*
+Project has 1 AWS account, no bastion hosts, no key management.
+
+*/
+
+ssha {
+  name    = "my-project"
+  configs = ["nonprod", "prod"]
+}
+
+aws {
+  profile_name = "my-project"
+}
+
+discover {
+  ec2 {
+    State {
+      Name = "running"
+    }
+
+    Tags {
+      Environment = "${config.name}"
+    }
+  }
+}
+
+display {
+  fields = ["InstanceId", "Tags.Service"]
+  sort   = ["Tags.Service", "InstanceId"]
+}

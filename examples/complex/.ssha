@@ -1,0 +1,92 @@
+/*
+Project has 2 AWS accounts, bastion hosts, key management with SSM,
+and a different SSM document for some IAM users.
+
+*/
+
+ssha {
+  name    = "my-project"
+  configs = ["dev", "stage", "prod"]
+}
+
+aws {
+  profile_name = "my-project-nonprod"
+}
+
+bastion {
+  ec2 {
+    State {
+      Name = "running"
+    }
+
+    Tags {
+      Environment = "${config.name}"
+      Service     = "bastion"
+    }
+  }
+
+  ssm {
+    PingStatus = "Online"
+  }
+}
+
+discover {
+  ec2 {
+    State {
+      Name = "running"
+    }
+
+    Tags {
+      Environment = "${config.name}"
+    }
+  }
+
+  ssm {
+    PingStatus = "Online"
+  }
+}
+
+display {
+  fields = ["InstanceId", "Tags.Service"]
+  sort   = ["Tags.Service", "InstanceId"]
+}
+
+ssh {
+  username      = "$(whoami)"
+  identity_file = "~/.ssh/id_rsa.pub"
+}
+
+ssm {
+  document {
+    name = "add-ssh-key"
+  }
+
+  parameters {
+    username = ["${ssh.username}"]
+    key      = ["$(cat ${ssh.identity_file})"]
+  }
+}
+
+# config specific settings
+
+config prod {
+  aws {
+    profile_name = "my-project-prod"
+  }
+}
+
+# iam group specific settings
+
+iam group developers {
+  ssm document {
+    name = "add-ssh-key-developers"
+  }
+
+  bastion ec2 Tags {
+    "SSH:developers" = ""
+  }
+
+  discover ec2 Tags {
+    "SSH:developers" = ""
+  }
+}
