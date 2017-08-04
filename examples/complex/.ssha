@@ -52,8 +52,9 @@ display {
 }
 
 ssh {
-  username      = "$(whoami)"
-  identity_file = "~/.ssh/id_rsa.pub"
+  username              = "$(whoami)"
+  identity_file         = "~/.ssh/id_rsa.pub"
+  user_known_hosts_file = "${ssm.host_keys_file}"
 }
 
 ssm {

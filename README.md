@@ -160,6 +160,16 @@ ssh {
   ${bastion.address} is a variable that resolves to the bastion host's address.
   */
   proxy_command = "ssh -W %h:%p ${bastion.address}"
+
+  /*
+  ${ssm.host_keys_file} is a variable that resolves to a temporary file that
+  is generated from the SSM command output. For this to work, the SSM document
+  command must print the server's SSH host keys to stdout. The host keys can be
+  printed with `ssh-keyscan localhost`. Any other commands printing to stdout
+  should be redirected to /dev/null so that the output contains the host keys
+  and nothing else.
+  */
+  user_known_hosts_file = "${ssm.host_keys_file}"
 }
 
 ```

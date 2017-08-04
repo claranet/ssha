@@ -1,10 +1,11 @@
 from __future__ import print_function
 
+import re
 import time
 
 from botocore.exceptions import ClientError
 
-from . import aws, config, errors
+from . import aws, config, errors, ssh
 
 
 def _send_command(instance_ids):
@@ -37,6 +38,8 @@ def _wait_for_command(instance_ids, command_id):
 
     ssm = aws.client('ssm')
 
+    outputs = {}
+
     for instance_id in instance_ids:
 
         result = {'Status': 'Pending'}
@@ -55,6 +58,9 @@ def _wait_for_command(instance_ids, command_id):
             errors.json_exit(result)
 
         print('[ssha] ssm command finished on {}'.format(instance_id))
+        outputs[instance_id] = result['StandardOutputContent']
+
+    return outputs
 
 
 def find_instances():
@@ -68,17 +74,29 @@ def find_instances():
     return response['InstanceInformationList']
 
 
-def send_command(instance, bastion):
+def send_command(*instances):
 
-    instance_ids = [instance['InstanceId']]
-    if bastion:
-        instance_ids.append(bastion['InstanceId'])
+    instances = [instance for instance in instances if instance]
+    instance_ids = [instance['InstanceId'] for instance in instances]
 
     command_id = _send_command(
         instance_ids=instance_ids,
     )
 
-    _wait_for_command(
+    outputs = _wait_for_command(
         instance_ids=instance_ids,
         command_id=command_id,
     )
+
+    host_keys_file = config.get('ssm.host_keys_file')
+    if host_keys_file:
+        with open(host_keys_file, 'w') as open_file:
+            for instance in instances:
+                hostname = ssh.get_hostname(instance)
+                instance_id = instance['InstanceId']
+                host_keys = outputs[instance_id]
+                for line in host_keys.splitlines():
+                    # Replace hostname from the host keys line
+                    # with the instance's hostname.
+                    line = re.sub(r'^[^#\s]+', hostname, line)
+                    open_file.write(line + '\n')
