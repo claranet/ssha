@@ -66,12 +66,17 @@ def _wait_for_command(instance_ids, command_id):
 def find_instances():
 
     ssm = aws.client('ssm')
+    paginator = ssm.get_paginator('describe_instance_information')
+    page_iterator = paginator.paginate()
 
-    response = ssm.describe_instance_information()
-    if response['ResponseMetadata']['HTTPStatusCode'] != 200:
-        errors.json_exit(response)
+    instance_info_list = []
+    for page in page_iterator:
+        if page['ResponseMetadata']['HTTPStatusCode'] != 200:
+            errors.json_exit(page)
 
-    return response['InstanceInformationList']
+        instance_info_list += page['InstanceInformationList']
+
+    return instance_info_list
 
 
 def send_command(*instances):
