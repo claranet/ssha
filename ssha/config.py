@@ -1,4 +1,5 @@
 import copy
+import os
 import re
 import subprocess
 import tempfile
@@ -7,6 +8,7 @@ from . import errors, settings
 
 
 _config = {}
+_ssh_config = {}
 _tempfiles = {}
 
 
@@ -35,6 +37,17 @@ def _get(key, default=None):
         if not value:
             break
     return value or default
+
+
+def _get_ssh_config(key):
+    if not _ssh_config:
+        for line in _exec('ssh -G amazonaws.com').splitlines():
+            try:
+                name, value = line.split(' ', 1)
+            except ValueError:
+                name, value = line, []
+            _ssh_config.setdefault(name, []).append(value)
+    return _ssh_config.get(key, [])
 
 
 def _is_used(data, key):
@@ -116,8 +129,11 @@ def load(name):
             if group in iam_group_specific_settings:
                 update(iam_group_specific_settings[group])
 
+    # Default to SSH's default user.
     if not _get('ssh.username'):
-        add('ssh.username', '$(whoami)')
+        for user in _get_ssh_config('user'):
+            add('ssh.username', user)
+            break
 
     if _get('bastion') and not _get('ssh.proxy_command'):
         from . import ssh
@@ -127,6 +143,21 @@ def load(name):
             known_hosts_options = []
         proxy_command = ['ssh'] + known_hosts_options + ['-W', '%h:%p', '${bastion.address}']
         add('ssh.proxy_command', ssh.format_command(proxy_command))
+
+    # To support configs like this:
+    #   ssm.parameters.key = ["$(cat '${ssh.identityfile_public}')"]
+    # If "ssh.identityfile_public" has been used as a variable, then find the
+    # first identity file in the SSH config that has a matching ".pub" file.
+    # The SSM document command would then add this public key to a user account
+    # so that SSH key-based authentication will work.
+    if is_used_as_variable('ssh.identityfile_public') and not _get('ssh.identityfile_public'):
+        for private_key_path in _get_ssh_config('identityfile'):
+            private_key_path = os.path.expanduser(private_key_path)
+            if os.path.exists(private_key_path):
+                public_key_path = private_key_path + '.pub'
+                if os.path.exists(public_key_path):
+                    add('ssh.identityfile_public', public_key_path)
+                    break
 
     # To support configs like this:
     #   ssh.user_known_hosts_file = "${ssm.host_keys_file}"

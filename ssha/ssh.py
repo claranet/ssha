@@ -30,13 +30,6 @@ def connect(instance, bastion):
     if config.get('verbose'):
         command += ['-v']
 
-    identity_file = config.get('ssh.identity_file')
-    if identity_file:
-        # Don't add to the command when using the default identity,
-        # because it would make no difference.
-        if identity_file not in ('~/.ssh/id_dsa.pub', '~/.ssh/id_rsa.pub'):
-            command += ['-i', identity_file]
-
     user_known_hosts_file = config.get('ssh.user_known_hosts_file')
     if user_known_hosts_file:
         command += ['-o', 'UserKnownHostsFile={}'.format(user_known_hosts_file)]

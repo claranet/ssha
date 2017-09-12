@@ -150,16 +150,10 @@ ssha is not an SSH client; it instead figures out the right `ssh` command to run
 ```js
 ssh {
   /*
-  $(whoami) runs a shell command to get the current username.
+  The default username can be overridden if necessary.
+  If not defined, the default SSH user name is used.
   */
-  username = "$(whoami)"
-
-  identity_file = "~/.ssh/id_rsa.pub"
-
-  /*
-  ${bastion.address} is a variable that resolves to the bastion host's address.
-  */
-  proxy_command = "ssh -W %h:%p ${bastion.address}"
+  username = "ec2-user"
 
   /*
   ${ssm.host_keys_file} is a variable that resolves to a temporary file that
@@ -171,8 +165,12 @@ ssh {
   */
   user_known_hosts_file = "${ssm.host_keys_file}"
 }
-
 ```
+
+Computed values:
+
+* `ssh.identityfile_public` - This is the path of the first `.pub` file that matches a private identity file in the SSH config. The primary use case for this is to install it onto a server using the SSM command, allowing key based authentication.
+* `ssh.username` - This defaults to the default user in the SSH config.
 
 ### `ssm {}`
 
@@ -188,10 +186,14 @@ ssm {
 
   parameters {
     username = ["${ssh.username}"]
-    key      = ["$(cat ${ssh.identity_file})"]
+    key      = ["$(cat '${ssh.identityfile_public}')"]
   }
 }
 ```
+
+Computed values:
+
+* `ssm.host_keys_file` - This is the path of a temporary file that is is generated from the SSM command output. For this to work, the SSM document command must print the server's SSH host keys to stdout. The host keys can be printed with `ssh-keyscan localhost`. Any other commands printing to stdout should be redirected to /dev/null so that the output contains the host keys and nothing else.
 
 ### `config [name] {}`
 
