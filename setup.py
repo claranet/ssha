@@ -20,6 +20,7 @@ setup(
         'bin/ssha',
     ),
     install_requires=(
+        'botocore>=1.5.8',
         'boto3',
         'boto3-session-cache',
         'pyhcl',
