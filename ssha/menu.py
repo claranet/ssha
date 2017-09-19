@@ -24,9 +24,11 @@ class Menu(object):
         self.position = 0
         self.items = items
 
-    def addstr(self, y, x, str, attr=None):
-        if y + 1 < self.max_y and x + len(str) < self.max_x:
-            self.window.addstr(y, x, str, attr)
+        self.offset_x = 2
+
+    def addstr(self, y, x, string, attr=None):
+        if y < self.max_y:
+            self.window.addstr(y, x, string[:self.max_x - self.offset_x - x], attr)
 
     def navigate(self, n):
         self.position += n
@@ -50,13 +52,14 @@ class Menu(object):
 
             # Display the menu title.
             if self.title:
-                self.addstr(1, 2, self.title, curses.A_NORMAL)
-                self.addstr(2, 2, '-' * len(self.title), curses.A_NORMAL)
-                offset_y = 3
+                self.addstr(1, self.offset_x, self.title, curses.A_NORMAL)
+                self.addstr(2, self.offset_x, '-' * len(self.title), curses.A_NORMAL)
+                offset_top = 3
             else:
-                offset_y = 1
+                offset_top = 1
+            offset_bottom = 1
 
-            window_height = max(self.max_y - offset_y - 2, 0)
+            window_height = max(self.max_y - offset_top - offset_bottom - 1, 0)
 
             if self.position < window_height:
                 window = (0, window_height)
@@ -78,21 +81,30 @@ class Menu(object):
 
                 # Display the item.
                 self.addstr(
-                    offset_y + row,
-                    2,
+                    offset_top + row,
+                    self.offset_x,
                     item.label,
                     mode,
                 )
 
                 # Write out spaces to handle when a message becomes shorter.
                 self.addstr(
-                    offset_y + row,
-                    2 + len(item.label),
-                    ' ' * 100,
+                    offset_top + row,
+                    self.offset_x + len(item.label),
+                    ' ' * self.max_x,
                     curses.A_NORMAL,
                 )
 
                 row += 1
+
+            # Blank bottom lines if screen was resized
+            for y in range(offset_bottom):
+                self.addstr(
+                    self.max_y - y - 1,
+                    self.offset_x,
+                    ' ' * self.max_x,
+                    curses.A_NORMAL,
+                )
 
             # Because window.timeout was called,
             # this returns -1 if nothing was pressed.
@@ -100,11 +112,11 @@ class Menu(object):
 
             if key in [curses.KEY_ENTER, ord('\n')]:
                 return self.items[self.position].value
-            elif key == curses.KEY_UP:
+            elif key in (curses.KEY_UP, ord('k')):
                 self.navigate(-1)
-            elif key == curses.KEY_DOWN:
+            elif key in (curses.KEY_DOWN, ord('j')):
                 self.navigate(1)
-            elif key in (81, 113):
+            elif key in (ord('q'), ord('Q')):
                 # Either q or Q was pressed.
                 raise KeyboardInterrupt
 
