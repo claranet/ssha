@@ -117,7 +117,6 @@ class Menu(object):
             elif key in (curses.KEY_DOWN, ord('j')):
                 self.navigate(1)
             elif key in (ord('q'), ord('Q')):
-                # Either q or Q was pressed.
                 raise KeyboardInterrupt
 
         self.window.clear()
