@@ -12,24 +12,14 @@ def _describe_instances():
 
     print('[ssha] discovering ec2 instances')
 
-    next_token = None
-    while True:
-
-        kwargs = {}
-        if next_token:
-            kwargs['NextToken'] = next_token
-
-        response = ec2.describe_instances()
-        if response['ResponseMetadata']['HTTPStatusCode'] != 200:
-            errors.json_exit(response)
-
-        for reservation in response['Reservations']:
+    paginator = ec2.get_paginator('describe_instances')
+    page_iterator = paginator.paginate(MaxResults=15)
+    for page in page_iterator:
+        if page['ResponseMetadata']['HTTPStatusCode'] != 200:
+            errors.json_exit(page)
+        for reservation in page['Reservations']:
             for instance in reservation['Instances']:
                 yield instance
-
-        next_token = response.get('NextToken')
-        if not next_token:
-            break
 
 
 def _filter_instances(instances, rules):
