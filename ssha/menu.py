@@ -3,7 +3,7 @@ import curses
 
 from curses import panel
 
-from . import config, ec2
+from . import ec2
 
 
 Item = collections.namedtuple('Item', field_names=('label', 'value'))
@@ -56,7 +56,19 @@ class Menu(object):
             else:
                 offset_y = 1
 
+            window_height = max(self.max_y - offset_y - 2, 0)
+
+            if self.position < window_height:
+                window = (0, window_height)
+            else:
+                window = (self.position - window_height, self.position)
+
+            row = 0
+
             for index, item in enumerate(self.items):
+
+                if index < window[0] or index > window[1]:
+                    continue
 
                 # Highlight the selected item.
                 if index == self.position:
@@ -66,7 +78,7 @@ class Menu(object):
 
                 # Display the item.
                 self.addstr(
-                    offset_y + index,
+                    offset_y + row,
                     2,
                     item.label,
                     mode,
@@ -74,11 +86,13 @@ class Menu(object):
 
                 # Write out spaces to handle when a message becomes shorter.
                 self.addstr(
-                    offset_y + index,
+                    offset_y + row,
                     2 + len(item.label),
                     ' ' * 100,
                     curses.A_NORMAL,
                 )
+
+                row += 1
 
             # Because window.timeout was called,
             # this returns -1 if nothing was pressed.
