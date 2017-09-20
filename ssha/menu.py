@@ -26,9 +26,58 @@ class Menu(object):
 
         self.offset_x = 2
 
-    def addstr(self, y, x, string, attr=None):
-        if y < self.max_y:
-            self.window.addstr(y, x, string[:self.max_x - self.offset_x - x], attr)
+    def addstr(self, y, x, string, attr):
+        try:
+            self.window.addstr(y, x, string, attr)
+        except curses.error:
+            # Curses will error on the last line even when it works.
+            # https://stackoverflow.com/questions/7063128/last-character-of-a-window-in-python-curses
+            if y == self.max_y - 1:
+                pass
+            else:
+                raise
+
+    def addline(self, y, string, attr):
+        """
+        Displays a string on the screen. Handles truncation and borders.
+
+        """
+
+        if y >= self.max_y:
+            return
+
+        # Display the left blank border.
+        self.addstr(
+            y=y,
+            x=0,
+            string=' ' * self.offset_x,
+            attr=curses.A_NORMAL,
+        )
+
+        # Truncate the string if it is too long.
+        if self.offset_x + len(string) + self.offset_x > self.max_x:
+            string = string[:self.max_x - self.offset_x - self.offset_x - 2] + '..'
+
+        # Add whitespace between the end of the string and the edge of the
+        # screen. This is required when scrolling, to blank out characters
+        # from other lines that had been displayed here previously.
+        string += ' ' * (self.max_x - self.offset_x - len(string) - self.offset_x)
+
+        # Display the string.
+        self.addstr(
+            y=y,
+            x=self.offset_x,
+            string=string,
+            attr=attr,
+        )
+
+        # Display the right blank border.
+        self.addstr(
+            y=y,
+            x=self.max_x - self.offset_x,
+            string=' ' * self.offset_x,
+            attr=curses.A_NORMAL,
+        )
 
     def navigate(self, n):
         self.position += n
@@ -52,8 +101,8 @@ class Menu(object):
 
             # Display the menu title.
             if self.title:
-                self.addstr(1, self.offset_x, self.title, curses.A_NORMAL)
-                self.addstr(2, self.offset_x, '-' * len(self.title), curses.A_NORMAL)
+                self.addline(1, self.title)
+                self.addline(2, '-' * len(self.title))
                 offset_top = 3
             else:
                 offset_top = 1
@@ -80,29 +129,19 @@ class Menu(object):
                     mode = curses.A_NORMAL
 
                 # Display the item.
-                self.addstr(
+                self.addline(
                     offset_top + row,
-                    self.offset_x,
                     item.label,
                     mode,
-                )
-
-                # Write out spaces to handle when a message becomes shorter.
-                self.addstr(
-                    offset_top + row,
-                    self.offset_x + len(item.label),
-                    ' ' * self.max_x,
-                    curses.A_NORMAL,
                 )
 
                 row += 1
 
             # Blank bottom lines if screen was resized
             for y in range(offset_bottom):
-                self.addstr(
+                self.addline(
                     self.max_y - y - 1,
-                    self.offset_x,
-                    ' ' * self.max_x,
+                    '',
                     curses.A_NORMAL,
                 )
 
