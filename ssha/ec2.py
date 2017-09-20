@@ -116,4 +116,4 @@ def label(instance):
             value = value.get(key)
         if value:
             result.append(value)
-    return ' '.join(result) or instance['InstanceId']
+    return result or [instance['InstanceId']]
