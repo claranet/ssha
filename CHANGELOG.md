@@ -1,3 +1,7 @@
+# 1.0.1
+
+* Fix crash if no instances returned #42
+
 # 1.0.0
 
 * Add scrolling when there are too many instances to fit on screen #37
