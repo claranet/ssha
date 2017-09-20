@@ -143,9 +143,23 @@ def choose_config(names, search):
         return None
 
 
+def _find_each_column_width(table):
+    columns_size = [0] * len(table[0])
+    for row in table:
+        for j, column_element in enumerate(row):
+            columns_size[j] = max(columns_size[j], len(column_element))
+    return columns_size
+
+
 def choose_instance(instances, search):
 
-    items = [Item(label=ec2.label(inst), value=inst) for inst in instances]
+    labels = [ec2.label(inst) for inst in instances]
+    columns_width = _find_each_column_width(labels)
+
+    items = []
+    for i, inst in enumerate(instances):
+        formatted_labels = [label.ljust(columns_width[j]) for j, label in enumerate(labels[i])]
+        items.append(Item(label=' '.join(formatted_labels), value=inst))
 
     if search:
         search = search.lower()
