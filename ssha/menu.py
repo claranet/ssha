@@ -54,6 +54,9 @@ class Menu(object):
             attr=curses.A_NORMAL,
         )
 
+        # Remove trailing spaces so the truncate logic works correctly.
+        string = string.rstrip()
+
         # Truncate the string if it is too long.
         if self.offset_x + len(string) + self.offset_x > self.max_x:
             string = string[:self.max_x - self.offset_x - self.offset_x - 2] + '..'
