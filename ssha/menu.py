@@ -186,6 +186,9 @@ def choose_config(names, search):
 
 
 def _find_each_column_width(table):
+    if not table:
+        return []
+
     columns_size = [0] * len(table[0])
     for row in table:
         for j, column_element in enumerate(row):
