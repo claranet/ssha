@@ -1,2 +1,9 @@
-#!/bin/sh
-python -m ssha $*
+#!/usr/bin/env python
+
+import sys
+
+from ssha.cli import main
+
+
+if __name__ == '__main__':
+    sys.exit(main())

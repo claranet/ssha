@@ -12,8 +12,14 @@ _ssh_config = {}
 _tempfiles = {}
 
 
+try:
+    basestring
+except NameError:
+    basestring = str
+
+
 def _exec(command):
-    return subprocess.check_output(command, shell=True).strip()
+    return subprocess.check_output(command, shell=True).strip().decode('utf-8')
 
 
 def _exec_all(data):
