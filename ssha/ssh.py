@@ -6,7 +6,7 @@ import os
 from . import config
 
 
-def _get_address(instance):
+def _get_address(instance_ip):
 
     username = config.get('ssh.username')
 
@@ -15,12 +15,10 @@ def _get_address(instance):
     if username == os.environ.get('USER'):
         username = None
 
-    hostname = get_hostname(instance)
-
     if username:
-        return username + '@' + hostname
+        return username + '@' + instance_ip
     else:
-        return hostname
+        return instance_ip
 
 
 def connect(instance, bastion):
@@ -35,11 +33,13 @@ def connect(instance, bastion):
         command += ['-o', 'UserKnownHostsFile={}'.format(user_known_hosts_file)]
 
     if bastion:
-        config.add('bastion.address', _get_address(bastion))
+        instance_ip = get_ip(bastion, False)
+        config.add('bastion.address', _get_address(instance_ip))
         proxy_command = config.get('ssh.proxy_command')
         command += ['-o', 'ProxyCommand={}'.format(proxy_command)]
 
-    command += [_get_address(instance)]
+    instance_ip = get_ip(instance, bool(bastion))
+    command += [_get_address(instance_ip)]
 
     print('[ssha] running {}'.format(format_command(command)))
     run(command)
@@ -55,7 +55,9 @@ def format_command(command):
     return ' '.join(args)
 
 
-def get_hostname(instance):
+def get_ip(instance, connect_through_bastion):
+    if connect_through_bastion:
+        return instance['PrivateIpAddress']
     return instance.get('PublicIpAddress') or instance['PrivateIpAddress']
 
 
