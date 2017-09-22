@@ -33,12 +33,12 @@ def connect(instance, bastion):
         command += ['-o', 'UserKnownHostsFile={}'.format(user_known_hosts_file)]
 
     if bastion:
-        instance_ip = get_ip(bastion, False)
+        instance_ip = get_ip(bastion, connect_through_bastion=False)
         config.add('bastion.address', _get_address(instance_ip))
         proxy_command = config.get('ssh.proxy_command')
         command += ['-o', 'ProxyCommand={}'.format(proxy_command)]
 
-    instance_ip = get_ip(instance, bool(bastion))
+    instance_ip = get_ip(instance, connect_through_bastion=bool(bastion))
     command += [_get_address(instance_ip)]
 
     print('[ssha] running {}'.format(format_command(command)))
