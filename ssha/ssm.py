@@ -98,10 +98,10 @@ def send_command(instance, bastion):
 
         if bastion:
             instance_id = bastion['InstanceId']
-            instance_ips[instance_id] = ssh.get_ip(bastion, False)
+            instance_ips[instance_id] = ssh.get_ip(bastion, connect_through_bastion=False)
 
         instance_id = instance['InstanceId']
-        instance_ips[instance_id] = ssh.get_ip(instance, bool(bastion))
+        instance_ips[instance_id] = ssh.get_ip(instance, connect_through_bastion=bool(bastion))
 
         with open(host_keys_file, 'w') as open_file:
             for instance_id, ip in instance_ips.items():
