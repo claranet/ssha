@@ -1,3 +1,8 @@
+# 1.1.0
+
+* Python 3 support #44
+* Always use private IP when connecting through a bastion #45
+
 # 1.0.1
 
 * Fix crash if no instances returned #42
