@@ -79,10 +79,9 @@ def find_instances():
     return instance_info_list
 
 
-def send_command(*instances):
+def send_command(instance, bastion):
 
-    instances = [instance for instance in instances if instance]
-    instance_ids = [instance['InstanceId'] for instance in instances]
+    instance_ids = [inst['InstanceId'] for inst in (instance, bastion) if inst]
 
     command_id = _send_command(
         instance_ids=instance_ids,
@@ -95,13 +94,20 @@ def send_command(*instances):
 
     host_keys_file = config.get('ssm.host_keys_file')
     if host_keys_file:
+        instance_ips = {}
+
+        if bastion:
+            instance_id = bastion['InstanceId']
+            instance_ips[instance_id] = ssh.get_ip(bastion, False)
+
+        instance_id = instance['InstanceId']
+        instance_ips[instance_id] = ssh.get_ip(instance, bool(bastion))
+
         with open(host_keys_file, 'w') as open_file:
-            for instance in instances:
-                hostname = ssh.get_hostname(instance)
-                instance_id = instance['InstanceId']
+            for instance_id, ip in instance_ips.items():
                 host_keys = outputs[instance_id]
                 for line in host_keys.splitlines():
                     # Replace hostname from the host keys line
                     # with the instance's hostname.
-                    line = re.sub(r'^[^#\s]+', hostname, line)
+                    line = re.sub(r'^[^#\s]+', ip, line)
                     open_file.write(line + '\n')
