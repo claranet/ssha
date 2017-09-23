@@ -253,6 +253,24 @@ iam group developers {
 }
 ```
 
+## User config file
+
+For certain specific settings like the path to the public key to copy to instances you can use the user configuration file.
+
+The user configuration file can be created at the following paths:
+
+### Linux and Mac
+
+```
+~/.config/ssha/config
+```
+
+### Windows
+
+```
+%LOCALAPPDATA%\ssha\config
+```
+
 ## Contributing
 
 If you have an idea for a new feature, please submit an issue first to confirm whether a pull request would be accepted.
