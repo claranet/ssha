@@ -10,7 +10,11 @@ from . import errors
 _settings = {}
 
 
-def _find_settings_path():
+def _find_settings_path(path):
+    if path:
+        if os.path.isfile(path):
+            return path
+        errors.string_exit('Could not find .ssha file: {}'.format(path))
 
     cwd = os.path.realpath(os.getcwd())
 
@@ -20,7 +24,7 @@ def _find_settings_path():
             return path
         cwd = os.path.dirname(cwd)
 
-    return None
+    errors.string_exit('Could not find .ssha file in current directory or parent directories')
 
 
 def _load(path):
@@ -41,11 +45,11 @@ def load(**defaults):
     if defaults.get('verbose'):
         print('[ssha] finding settings file')
     _settings.update(defaults)
-    path = _find_settings_path()
-    if path:
-        if defaults.get('verbose'):
-            print('[ssha] loading {}'.format(path))
-        data = _load(path)
-        _settings.update(data)
-    else:
-        errors.string_exit('Could not find .ssha file in current directory or parent directories')
+
+    settings_path = defaults.get('settings_path')
+    path = _find_settings_path(settings_path)
+
+    if defaults.get('verbose'):
+        print('[ssha] loading {}'.format(path))
+    data = _load(path)
+    _settings.update(data)
