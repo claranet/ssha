@@ -1,8 +1,11 @@
 from __future__ import print_function
 
+from functools import wraps
+
 import boto3
 import boto3_session_cache
 import botocore.session
+from botocore.exceptions import ClientError, ParamValidationError
 
 from . import config
 
@@ -10,10 +13,30 @@ from . import config
 _sessions = {}
 
 
+def retry(attempts=3):
+    def wrapper(func):
+        @wraps(func)
+        def wrapped(*args, **kwargs):
+            tries = attempts
+            while True:
+                tries -= 1
+                try:
+                    return func(*args, **kwargs)
+                except (ClientError, ParamValidationError) as error:
+                    if tries > 0:
+                        print(error)
+                    else:
+                        raise
+        return wrapped
+    return wrapper
+
+
+@retry()
 def client(*args, **kwargs):
     return session().client(*args, **kwargs)
 
 
+@retry()
 def resource(*args, **kwargs):
     return session().resource(*args, **kwargs)
 
