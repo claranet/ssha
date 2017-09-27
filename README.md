@@ -67,6 +67,12 @@ ssha {
   each config represents a different environment in the project.
   */
   configs = ["dev", "stage", "prod"]
+
+  /*
+  This defines the version requirement for ssha.
+  */
+  version = ">=1.1,<2.0"
+
 }
 ```
 
