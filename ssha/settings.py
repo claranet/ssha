@@ -2,12 +2,32 @@ from __future__ import print_function
 
 import copy
 import hcl
+import operator
 import os
+import re
 
-from . import errors
+from distutils.version import StrictVersion
+
+from . import errors, __version__
 
 
 _settings = {}
+
+operators = {
+    None: operator.eq,
+    "<": operator.lt,
+    "<=": operator.le,
+    "==": operator.eq,
+    "!=": operator.ne,
+    ">=": operator.ge,
+    ">": operator.gt,
+}
+
+pattern = re.compile(
+    r'\s*'
+    r'(?P<operator>[<=>!]{,2})?\s*'
+    r'(?P<version>.+)\s*'
+)
 
 
 def _find_settings_path(path):
@@ -37,6 +57,32 @@ def _load(path):
         errors.string_exit('Error parsing settings: {}'.format(error))
 
 
+def _validate_version(data):
+    ssha_settings = data.get('ssha') or {}
+    version = ssha_settings.get('version')
+    if version is None:
+        return
+
+    ssha_version = StrictVersion(__version__)
+    requirements = version.split(',')
+    for requirement in requirements:
+        matched = pattern.match(requirement)
+        if matched is None:
+            errors.string_exit('Error parsing ssha version: {}'.format(requirement))
+
+        spec_operator = matched.group('operator')
+        if spec_operator not in operators:
+            errors.string_exit('Error parsing operator in ssha version: {}'.format(requirement))
+
+        try:
+            spec_version = StrictVersion(matched.group('version'))
+        except ValueError as error:
+            errors.string_exit('Error parsing ssha version: {}'.format(error))
+
+        if not operators[spec_operator](ssha_version, spec_version):
+            errors.string_exit("Current ssha version {} doesn't meet requirements in settings: {}".format(ssha_version, requirement))
+
+
 def all():
     return copy.deepcopy(_settings)
 
@@ -52,4 +98,5 @@ def load(**defaults):
     if defaults.get('verbose'):
         print('[ssha] loading {}'.format(path))
     data = _load(path)
+    _validate_version(data)
     _settings.update(data)
