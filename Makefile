@@ -35,3 +35,7 @@ upload: $(SDIST) $(WHEEL)
 .PHONY: clean
 clean:
 	rm -rf build dist *.egg-info
+
+.PHONY: test tests
+test tests:
+	@python -m unittest discover tests
