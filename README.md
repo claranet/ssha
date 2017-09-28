@@ -267,3 +267,9 @@ If you have an idea for a new feature, please submit an issue first to confirm w
 
 * PEP 8
 * 120 character limit
+
+### Testing
+
+Run `make test` to run unit tests.
+
+Run `tox` to run further tests.

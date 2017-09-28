@@ -80,7 +80,9 @@ def _validate_version(data):
             errors.string_exit('Error parsing ssha version: {}'.format(error))
 
         if not operators[spec_operator](ssha_version, spec_version):
-            errors.string_exit("Current ssha version {} doesn't meet requirements in settings: {}".format(ssha_version, requirement))
+            errors.string_exit("Current ssha version {} doesn't meet requirements in settings: {}".format(
+                ssha_version, requirement
+            ))
 
 
 def all():
