@@ -90,7 +90,6 @@ def _merge(target, source):
 def add(name, value):
     data = {}
     here = data
-    last_key = name
     for key in name.split('.'):
         last = here
         here[key] = {}
