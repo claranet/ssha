@@ -25,7 +25,7 @@ operators = {
 
 pattern = re.compile(
     r'\s*'
-    r'(?P<operator>[<=>!]{,2})?\s*'
+    r'(?P<operator>[<=>!]{1,2})?\s*'
     r'(?P<version>.+)\s*'
 )
 
