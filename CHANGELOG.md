@@ -1,3 +1,9 @@
+# 1.2.0
+
+* Add argument for custom .ssha file location #48
+* Allow user to enter MFA code again after receiving an error #49
+* Add version check to .ssha file #50
+
 # 1.1.0
 
 * Python 3 support #44
