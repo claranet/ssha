@@ -1,4 +1,4 @@
-from . import aws
+from . import aws, errors
 
 
 _cache = {}
@@ -31,6 +31,7 @@ def _list_groups_for_user(username):
         marker = response.get('Marker')
         if not marker:
             return groups
+
 
 def groups():
     if 'groups' not in _cache:
