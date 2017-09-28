@@ -45,7 +45,7 @@ def groups():
 
 def user():
     if 'user' not in _cache:
-        creds = aws.session().get_credentials()
+        creds = aws.credentials()
         if creds.method == 'assume-role':
             _cache['user'] = None
         else:

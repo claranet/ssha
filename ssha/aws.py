@@ -37,6 +37,11 @@ def client(*args, **kwargs):
 
 
 @retry()
+def credentials(*args, **kwargs):
+    return session().get_credentials(*args, **kwargs)
+
+
+@retry()
 def resource(*args, **kwargs):
     return session().resource(*args, **kwargs)
 
