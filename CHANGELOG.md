@@ -1,3 +1,7 @@
+# 1.2.1
+
+* Use Paramiko to parse SSH config #56
+
 # 1.2.0
 
 * Add argument for custom .ssha file location #48
