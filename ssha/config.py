@@ -4,18 +4,19 @@ import re
 import subprocess
 import tempfile
 
+from paramiko.config import SSHConfig
+
 from . import errors, settings
-
-
-_config = {}
-_ssh_config = {}
-_tempfiles = {}
-
 
 try:
     basestring
 except NameError:
     basestring = str
+
+
+_config = {}
+_ssh_config = {}
+_tempfiles = {}
 
 
 def _exec(command):
@@ -47,12 +48,36 @@ def _get(key, default=None):
 
 def _get_ssh_config(key):
     if not _ssh_config:
-        for line in _exec('ssh -G amazonaws.com').splitlines():
-            try:
-                name, value = line.split(' ', 1)
-            except ValueError:
-                name, value = line, []
-            _ssh_config.setdefault(name, []).append(value)
+
+        ssh_config = SSHConfig()
+
+        path = os.path.expanduser('~/.ssh/config')
+        if os.path.exists(path):
+            with open(path) as open_file:
+                ssh_config.parse(open_file)
+
+        # Create a fake hostname like "dev.myproject.ssha" to allow users to
+        # set options in ~/.ssh/config based on the environment and project.
+        hostname_parts = (get('config.name'), get('ssha.name'), 'ssha')
+        hostname = '.'.join(filter(None, hostname_parts))
+
+        result = ssh_config.lookup(hostname)
+
+        if 'identityfile' not in result:
+            result['identityfile'] = [
+                '~/.ssh/id_rsa',
+                '~/.ssh/id_dsa',
+                '~/.ssh/id_ecdsa',
+                '~/.ssh/id_ed25519',
+            ]
+
+        if 'user' not in result:
+            user = os.environ.get('USER')
+            if user:
+                result['user'] = user
+
+        _ssh_config.update(result)
+
     return _ssh_config.get(key, [])
 
 
