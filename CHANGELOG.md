@@ -1,3 +1,7 @@
+# 1.2.2
+
+* Fix single character username #58
+
 # 1.2.1
 
 * Use Paramiko to parse SSH config #56
