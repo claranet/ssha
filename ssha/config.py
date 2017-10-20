@@ -161,9 +161,9 @@ def load(name):
 
     # Default to SSH's default user.
     if not _get('ssh.username'):
-        for user in _get_ssh_config('user'):
+        user = _get_ssh_config('user')
+        if user:
             add('ssh.username', user)
-            break
 
     if _get('bastion') and not _get('ssh.proxy_command'):
         from . import ssh
