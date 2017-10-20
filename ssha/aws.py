@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import unicode_literals
 
 from functools import wraps
 
@@ -24,7 +25,7 @@ def retry(attempts=3):
                     return func(*args, **kwargs)
                 except (ClientError, ParamValidationError) as error:
                     if tries > 0:
-                        print(error)
+                        print('[ssha] {}'.format(error))
                     else:
                         raise
         return wrapped
