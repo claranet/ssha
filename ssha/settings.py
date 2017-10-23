@@ -93,7 +93,7 @@ def all():
 def load(**defaults):
     if defaults.get('verbose'):
         print('[ssha] finding settings file')
-    _settings.update(defaults)
+    update(defaults)
 
     settings_path = defaults.get('settings_path')
     path = _find_settings_path(settings_path)
@@ -102,4 +102,12 @@ def load(**defaults):
         print('[ssha] loading {}'.format(path))
     data = _load(path)
     _validate_version(data)
+    update(data)
+
+
+def reset():
+    _settings.clear()
+
+
+def update(data):
     _settings.update(data)
