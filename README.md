@@ -208,7 +208,7 @@ Blocks can be updated per config.
 ```js
 ssha {
   name = "my-project"
-  configs = ["dev", "stage", "prod"]
+  configs = ["dev-nonprod", "stage-nonprod", "prod"]
 }
 
 /*
@@ -225,6 +225,14 @@ config prod {
   aws {
     profile_name = "my-project-prod"
   }
+}
+
+/*
+Wildcard characters can be used to match multiple configs.
+Python's fnmatch is used for pattern matching.
+*/
+config "*-nonprod" {
+  ...
 }
 ```
 

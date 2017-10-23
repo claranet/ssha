@@ -6,6 +6,7 @@ import re
 import subprocess
 import tempfile
 
+from fnmatch import fnmatch
 from paramiko.config import SSHConfig
 
 from . import errors, settings
@@ -150,8 +151,9 @@ def load(name):
     if name:
         if name not in names():
             errors.string_exit('config {} not found in .ssha file'.format(name))
-        if name in config_specific_settings:
-            update(config_specific_settings[name])
+        for config_name in config_specific_settings:
+            if fnmatch(name, config_name):
+                update(config_specific_settings[config_name])
         add('config.name', name)
 
     iam_group_specific_settings = get('iam.group')
@@ -205,6 +207,12 @@ def load(name):
 def names():
     ssha_settings = settings.all().get('ssha') or {}
     return ssha_settings.get('configs') or []
+
+
+def reset():
+    _config.clear()
+    _ssh_config.clear()
+    _tempfiles.clear()
 
 
 def update(data):
