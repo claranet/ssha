@@ -130,7 +130,13 @@ discover {
       name of the config that was selected by the user.
       */
       Environment = "${config.name}"
-      Service     = "bastion"
+    }
+
+    /*
+    TagsNotEqual can be used to exclude instances with matching tags.
+    */
+    TagsNotEqual {
+      Service = "k8s"
     }
   }
 
