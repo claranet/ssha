@@ -1,5 +1,7 @@
 from __future__ import print_function
 
+import operator
+
 from . import aws, config, errors, ssm
 
 
@@ -42,19 +44,27 @@ def _instance_sort_key(instance):
     return result
 
 
-def _rules_pass(obj, rules):
+def _rules_pass(obj, rules, compare=operator.eq):
 
     for key, expected_value in rules.items():
 
-        if key not in obj:
-            return False
-
         if isinstance(expected_value, dict):
-            nested_rules = expected_value
-            if not _rules_pass(obj[key], nested_rules):
+
+            if key.endswith('NotEqual'):
+                nested_compare = operator.ne
+                key = key[:-len('NotEqual')]
+            else:
+                nested_compare = compare
+
+            nested_rules_passed = _rules_pass(
+                obj=obj.get(key) or {},
+                rules=expected_value,
+                compare=nested_compare,
+            )
+            if not nested_rules_passed:
                 return False
 
-        elif obj[key] != expected_value:
+        elif not compare(obj.get(key), expected_value):
             return False
 
     return True
