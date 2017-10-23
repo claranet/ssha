@@ -94,6 +94,18 @@ Instances in a private subnet might require a "bastion" or "jump" host. If the `
 
 The `bastion` and `discovery` blocks use the same configuration syntax. See the `discovery` documentation for more information.
 
+If the bastion is behind an ELB and cannot be looked up via discovery, the hostname can be specified directly.
+
+```js
+bastion {
+  /*
+  ${config.name} is a variable that resolves to the
+  name of the config that was selected by the user.
+  */
+  hostname = "bastion.${config.name}.my-project.com"
+}
+```
+
 ### `discover {}`
 
 The `discover` block controls which instances will be shown to the user.
