@@ -1,3 +1,10 @@
+# 1.3.0
+
+* Fix possible unicode errors #60
+* Allow wildcards on config names #61
+* Allow setting the bastion hostname directly #62
+* Add support for TagsNotEqual #63
+
 # 1.2.2
 
 * Fix single character username #58
