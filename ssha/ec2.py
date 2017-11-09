@@ -124,6 +124,5 @@ def label(instance):
         value = instance
         for key in field.split('.'):
             value = value.get(key)
-        if value:
-            result.append(value)
+        result.append(value or '')
     return result or [instance['InstanceId']]

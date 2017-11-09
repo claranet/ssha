@@ -1,9 +1,28 @@
 import unittest
 
-from ssha import ec2
+from ssha import config, ec2, settings
 
 
 class TestEC2(unittest.TestCase):
+
+    def setUp(self):
+        # Reset the global settings and config objects before each test.
+        settings.reset()
+        config.reset()
+
+    def test_label(self):
+        # Test that missing display fields result in blank strings.
+        config.add(
+            'display.fields',
+            ['InstanceId', 'Tags.Environment', 'Tags.Name'],
+        )
+        label = ec2.label({
+            'InstanceId': 'abc',
+            'Tags': {
+                'Name': 'xyz',
+            },
+        })
+        self.assertEqual(label, ['abc', '', 'xyz'])
 
     def test_rules_pass(self):
 
