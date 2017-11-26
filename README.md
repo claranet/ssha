@@ -69,9 +69,14 @@ ssha {
   configs = ["dev", "stage", "prod"]
 
   /*
+  This defines the list of available regions.
+  */
+  regions = ["eu-west-1", "eu-central-1", "us-west-1"]
+
+  /*
   This defines the version requirement for ssha.
   */
-  version = ">=1.1,<2.0"
+  version = ">=1.4,<2.0"
 
 }
 ```
@@ -82,9 +87,12 @@ The `aws` block defines the AWS profile or credentials used to access the AWS AP
 
 It is recommended that you define profiles in `~/.aws/config` as per the [AWS CLI documentation](http://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html) and only refer to profile names in the `.ssha` file.
 
+The `aws` block can define which region to use. If `region_name` is not scecified here, you can select it from `ssha.regions`. If `ssha.regions` is empty, the region will be picked up from `AWS_DEFAULT_REGION` or the default region will be used.
+
 ```js
 aws {
   profile_name = "my-project"
+  region_name  = "eu-west-1"
 }
 ```
 
@@ -234,6 +242,7 @@ Configs use this AWS profile by default.
 */
 aws {
   profile_name = "my-project-nonprod"
+  region_name  = "eu-central-1"
 }
 
 /*
