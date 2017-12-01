@@ -209,6 +209,13 @@ def names():
     return ssha_settings.get('configs') or []
 
 
+def regions():
+    region = get('aws.region_name')
+    if region:
+        return [region]
+    return get('ssha.regions') or []
+
+
 def reset():
     _config.clear()
     _ssh_config.clear()

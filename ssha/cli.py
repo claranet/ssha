@@ -12,6 +12,7 @@ def main():
         parser.add_argument('config', nargs='?', help='Configuration name')
         parser.add_argument('search', nargs='?', help='Instance search string')
         parser.add_argument('-v', '--verbose', action='store_true', help='Verbose mode')
+        parser.add_argument('--region', help='Region name')
         parser.add_argument('--settings', help='Path to the .ssha file')
         parser.add_argument('--version', action='store_true', help='show the installed version and exit')
 
@@ -26,6 +27,11 @@ def main():
         configs = config.names()
         config_name = menu.choose_config(configs, args.config)
         config.load(config_name)
+
+        regions = config.regions()
+        region_name = menu.choose_config(regions, args.region)
+        if region_name:
+            config.add('aws.region_name', region_name)
 
         instances = ec2.discover_instances()
         instance = menu.choose_instance(instances, args.search)
