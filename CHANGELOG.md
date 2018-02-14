@@ -1,3 +1,8 @@
+# 1.4.0
+
+* Fix for instances with missing tags #64
+* Multi-region support #65
+
 # 1.3.0
 
 * Fix possible unicode errors #60
