@@ -37,7 +37,10 @@ def main():
         instance = menu.choose_instance(instances, args.search)
         if instance:
 
-            bastion = ec2.discover_bastion(instance)
+            if config.get('bastion') and not config.get('bastion.disabled'):
+                bastion = ec2.discover_bastion(instance)
+            else:
+                bastion = None
 
             if config.get('ssm'):
                 ssm.send_command(instance, bastion)
