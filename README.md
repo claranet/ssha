@@ -114,6 +114,22 @@ bastion {
 }
 ```
 
+The bastion host can be disabled for particular configs or IAM groups by setting the `disabled` field.
+
+```js
+iam group vpn-users {
+  /*
+  If the user is in the IAM group named "vpn-users"
+  and they are connected to a VPN with appropriate
+  network and security group configuration, then it
+  is not necessary to use a bastion server.
+  */
+  bastion {
+    disabled = true
+  }
+}
+```
+
 ### `discover {}`
 
 The `discover` block controls which instances will be shown to the user.
