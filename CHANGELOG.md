@@ -1,3 +1,7 @@
+# 1.5.0
+
+* Allow the bastion to be disabled #66
+
 # 1.4.0
 
 * Fix for instances with missing tags #64
