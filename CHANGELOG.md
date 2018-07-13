@@ -1,3 +1,7 @@
+# 1.5.1
+
+* Improve error messages for SSH config issues
+
 # 1.5.0
 
 * Allow the bastion to be disabled #66
