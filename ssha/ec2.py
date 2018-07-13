@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import datetime
 import operator
 
 from . import aws, config, errors, ssm
@@ -124,5 +125,7 @@ def label(instance):
         value = instance
         for key in field.split('.'):
             value = value.get(key)
+        if isinstance(value, datetime.datetime):
+            value = '[{:%Y-%m-%d %H:%M}]'.format(value)
         result.append(value or '')
     return result or [instance['InstanceId']]
