@@ -168,6 +168,8 @@ def load(name):
         user = _get_ssh_config('user')
         if user:
             add('ssh.username', user)
+        elif is_used_as_variable('ssh.username'):
+            errors.string_exit('Could not determine a username to use for ssh.username')
 
     if _get('bastion') and not _get('ssh.proxy_command'):
         from . import ssh
@@ -185,13 +187,21 @@ def load(name):
     # The SSM document command would then add this public key to a user account
     # so that SSH key-based authentication will work.
     if is_used_as_variable('ssh.identityfile_public') and not _get('ssh.identityfile_public'):
+        tried = {}
         for private_key_path in _get_ssh_config('identityfile'):
             private_key_path = os.path.expanduser(private_key_path)
-            if os.path.exists(private_key_path):
-                public_key_path = private_key_path + '.pub'
-                if os.path.exists(public_key_path):
-                    add('ssh.identityfile_public', public_key_path)
-                    break
+            public_key_path = private_key_path + '.pub'
+            if os.path.exists(private_key_path) and os.path.exists(public_key_path):
+                add('ssh.identityfile_public', public_key_path)
+                break
+            tried[private_key_path] = public_key_path
+        else:
+            error_lines = []
+            error_lines.append('Could not find a key to use for ssh.identityfile_public')
+            error_lines.append('Tried the following key pairs:')
+            for private_key_path, public_key_path in sorted(tried.items()):
+                error_lines.append('  ' + private_key_path + ' + ' + public_key_path)
+            errors.string_exit('\n'.join(error_lines))
 
     # To support configs like this:
     #   ssh.user_known_hosts_file = "${ssm.host_keys_file}"
