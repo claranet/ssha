@@ -1,3 +1,7 @@
+# 1.6.0
+
+* Support LaunchTime in display.fields 
+
 # 1.5.1
 
 * Improve error messages for SSH config issues
