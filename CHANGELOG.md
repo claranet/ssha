@@ -1,3 +1,7 @@
+# 1.7.0
+
+* Allow running commands instead of ssh
+
 # 1.6.0
 
 * Support LaunchTime in display.fields 
