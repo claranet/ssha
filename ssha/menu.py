@@ -1,5 +1,6 @@
 import collections
 import curses
+import re
 
 from curses import panel
 
@@ -196,7 +197,7 @@ def _find_each_column_width(table):
     return columns_size
 
 
-def choose_instance(instances, search):
+def choose_instance(instances, search, show_menu=True):
 
     labels = [ec2.label(inst) for inst in instances]
     columns_width = _find_each_column_width(labels)
@@ -214,5 +215,16 @@ def choose_instance(instances, search):
 
     if not items:
         return None
+
+    if not show_menu:
+        if search:
+            # If there is a search string, use word boundaries
+            # to increase the changes of it being a good choice.
+            pattern = r'\b{}\b'.format(re.escape(search))
+            items.sort(
+                key=lambda item: bool(re.search(pattern, item.label, re.IGNORECASE)),
+                reverse=True,
+            )
+        return items[0].value
 
     return curses.wrapper(_display, items)

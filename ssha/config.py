@@ -26,20 +26,6 @@ def _exec(command):
     return subprocess.check_output(command, shell=True).strip().decode('utf-8')
 
 
-def _exec_all(data):
-    if isinstance(data, basestring):
-        for var in re.findall('\$\{(.+?)\}', data):
-            data = data.replace('${' + var + '}', get(var))
-        if data.startswith('$(') and data.endswith(')'):
-            data = _exec(data[2:-1])
-    elif isinstance(data, dict):
-        for key, value in data.items():
-            data[key] = _exec_all(value)
-    elif isinstance(data, list):
-        data = [_exec_all(item) for item in data]
-    return data
-
-
 def _get(key, default=None):
     value = _config
     for key in key.split('.'):
@@ -136,7 +122,7 @@ def get(key, default=None):
     if isinstance(value, (dict, list)):
         value = copy.deepcopy(value)
 
-    return _exec_all(value)
+    return render(value)
 
 
 def load(name):
@@ -224,6 +210,23 @@ def regions():
     if region:
         return [region]
     return get('ssha.regions') or []
+
+
+def render(data):
+    if isinstance(data, basestring):
+        for var in re.findall('\$\{(.+?)\}', data):
+            value = get(var)
+            if value is None:
+                raise KeyError(var)
+            data = data.replace('${' + var + '}', value)
+        if data.startswith('$(') and data.endswith(')'):
+            data = _exec(data[2:-1])
+    elif isinstance(data, dict):
+        for key, value in data.items():
+            data[key] = render(value)
+    elif isinstance(data, list):
+        data = [render(item) for item in data]
+    return data
 
 
 def reset():
