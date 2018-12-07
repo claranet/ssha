@@ -1,6 +1,7 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import re
 import time
 
@@ -112,3 +113,35 @@ def send_command(instance, bastion):
                     # with the instance's hostname.
                     line = re.sub(r'^[^#\s]+', ip, line)
                     open_file.write(line + '\n')
+
+
+def session_manager_enabled(instance):
+
+    # Check if enabled in config.
+    if not config.get('ssm.session_manager', False):
+        return False
+
+    # Check if agent is installed.
+    if not instance.get('AgentVersion'):
+        return False
+
+    # Check if required plugin is installed.
+    if os.system('which session-manager-plugin > /dev/null') != 0:
+        return False
+
+    return True
+
+
+def start_session(instance):
+
+    session = aws.session()
+    creds = session.get_credentials().get_frozen_credentials()
+
+    os.putenv('AWS_DEFAULT_REGION', session.region_name)
+    os.putenv('AWS_ACCESS_KEY_ID', creds.access_key)
+    os.putenv('AWS_SECRET_ACCESS_KEY', creds.secret_key)
+    os.putenv('AWS_SESSION_TOKEN', creds.token)
+
+    command = 'aws ssm start-session --target {}'.format(instance['InstanceId'])
+    print('[ssha] running {}'.format(command))
+    return os.system(command)

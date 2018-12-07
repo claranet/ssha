@@ -5,6 +5,7 @@ ssha makes it easy to SSH into AWS EC2 instances.
 Features:
 
 * discovery of EC2 instances
+* session manager support
 * bastion/jump host support
 * automatic user/key creation with SSM
 
@@ -222,7 +223,11 @@ Computed values:
 
 ### `ssm {}`
 
-The `ssm` block controls SSM behaviour. The use case for this is to run a command on the instance that creates a user and adds their SSH key. This allows for SSH access to EC2 instances that is restricted by IAM access; whoever has IAM access to the SSM document is allowed to give themselves SSH access to EC2 instances
+The `ssm` block controls SSM behaviour.
+
+#### Run Command
+
+The use case for this is to run a command on the instance that creates a user and adds their SSH key. This allows for SSH access to EC2 instances that is restricted by IAM access; whoever has IAM access to the SSM document is allowed to give themselves SSH access to EC2 instances
 
 This requires the EC2 instances to be using the SSM agent, and it requires an SSM document that handles user creation.
 
@@ -242,6 +247,22 @@ ssm {
 Computed values:
 
 * `ssm.host_keys_file` - This is the path of a temporary file that is is generated from the SSM command output. For this to work, the SSM document command must print the server's SSH host keys to stdout. The host keys can be printed with `ssh-keyscan localhost`. Any other commands printing to stdout should be redirected to /dev/null so that the output contains the host keys and nothing else.
+
+#### Session Manager
+
+The use case for this is to use the [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html) to access instances via AWS Session Manager. This provides a shell using the SSM Agent user, and does not create users on EC2 instances. It also does not require direct network access to the instances, removing the need for a bastion server, and removing the need for port 22 access.
+
+This requires the EC2 instances to be using a compatible version of the SSM agent.
+
+```js
+ssm {
+  session_manager = true
+}
+```
+
+#### Both
+
+You can combine the above two configurations so that ssha will use Session Manager where possible, or fall back to Run Command if the user does not have the Session Manager plugin installed.
 
 ### `config [name] {}`
 

@@ -38,15 +38,21 @@ def main():
         instance = menu.choose_instance(instances, args.search, show_menu=not args.command)
         if instance:
 
-            if config.get('bastion') and not config.get('bastion.disabled'):
-                bastion = ec2.discover_bastion(instance)
+            if not args.command and ssm.session_manager_enabled(instance):
+
+                return ssm.start_session(instance)
+
             else:
-                bastion = None
 
-            if config.get('ssm'):
-                ssm.send_command(instance, bastion)
+                if config.get('bastion') and not config.get('bastion.disabled'):
+                    bastion = ec2.discover_bastion(instance)
+                else:
+                    bastion = None
 
-            return ssh.connect(instance, bastion, args.command)
+                if config.get('ssm'):
+                    ssm.send_command(instance, bastion)
+
+                return ssh.connect(instance, bastion, args.command)
 
         else:
             print('[ssha] no matching instances found')
