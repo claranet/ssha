@@ -1,3 +1,7 @@
+# 1.8.0
+
+* Add support for Session Manager
+
 # 1.7.0
 
 * Allow running commands instead of ssh
