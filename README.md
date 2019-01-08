@@ -199,10 +199,13 @@ ssha is not an SSH client; it instead figures out the right `ssh` command to run
 ```js
 ssh {
   /*
-  The default username can be overridden if necessary.
+  The default username/prefix can be overridden if necessary.
   If not defined, the default SSH user name is used.
   */
-  username = "ec2-user"
+  user{
+    name   = "ec2-user"
+    prefix = "ssha-"
+  }
 
   /*
   ${ssm.host_keys_file} is a variable that resolves to a temporary file that
@@ -230,6 +233,8 @@ The `ssm` block controls SSM behaviour.
 The use case for this is to run a command on the instance that creates a user and adds their SSH key. This allows for SSH access to EC2 instances that is restricted by IAM access; whoever has IAM access to the SSM document is allowed to give themselves SSH access to EC2 instances
 
 This requires the EC2 instances to be using the SSM agent, and it requires an SSM document that handles user creation.
+
+If no key parameter is provided, one will be generated per connection.
 
 ```js
 ssm {

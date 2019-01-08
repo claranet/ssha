@@ -10,15 +10,21 @@ from . import config
 
 def _get_address(instance_ip):
 
-    username = config.get('ssh.username')
+    name = config.get('ssh.user.name')
+    prefix = config.get('ssh.user.prefix')
 
     # Don't add the username to the address when it is the current user,
     # because it would make no difference.
-    if username == os.environ.get('USER'):
-        username = None
+    user = os.environ.get('USER')
+    if name == user:
+        name = None
 
-    if username:
-        return username + '@' + instance_ip
+    if not name and prefix:
+        return prefix + user + '@' + instance_ip
+    elif name and prefix:
+        return prefix + name + '@' + instance_ip
+    elif name:
+        return name + '@' + instance_ip
     else:
         return instance_ip
 
