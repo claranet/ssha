@@ -6,20 +6,14 @@ import re
 import time
 
 from botocore.exceptions import ClientError
-from cryptography.hazmat.primitives import serialization as crypto_serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
-from cryptography.hazmat.backends import default_backend as crypto_default_backend
-from os import chmod
 
 from . import aws, config, errors, ssh
+
 
 def _send_command(instance_ids):
 
     document_name = config.get('ssm.document.name')
     parameters = config.get('ssm.parameters')
-
-    if 'key' not in parameters:
-        parameters['key'] = generate_key()
 
     print('[ssha] ssm send {document} to {instances}'.format(
         document=document_name,
@@ -86,41 +80,6 @@ def find_instances():
 
     return instance_info_list
 
-
-def generate_key():
-    path = os.environ['HOME'] + "/.ssh/ssha/"
-    key_path = path + "id_rsa_{}".format(time.time())
-
-    if not os.path.exists(path):
-        os.mkdir(path)
-
-    os.system('ssh-add -d {}*'.format(path))
-
-    for f in os.listdir(path):
-        os.remove(path + f)
-
-    key = rsa.generate_private_key(
-        backend=crypto_default_backend(),
-        public_exponent=65537,
-        key_size=4096
-    )
-    private_key = key.private_bytes(
-        crypto_serialization.Encoding.PEM,
-        crypto_serialization.PrivateFormat.PKCS8,
-        crypto_serialization.NoEncryption())
-    public_key = key.public_key().public_bytes(
-        crypto_serialization.Encoding.OpenSSH,
-        crypto_serialization.PublicFormat.OpenSSH
-    )
-
-    with open(key_path, 'w') as content_file:
-        chmod(key_path, 0600)
-        content_file.write(private_key)
-    os.system('ssh-add {}'.format(key_path))
-    os.remove(key_path)
-    with open(key_path + ".pub", 'w') as content_file:
-        content_file.write(public_key)
-        return [public_key]
 
 def send_command(instance, bastion):
 

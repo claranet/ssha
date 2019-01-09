@@ -5,7 +5,11 @@ import os
 import re
 import subprocess
 import tempfile
+import time
 
+from cryptography.hazmat.primitives import serialization as crypto_serialization
+from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.backends import default_backend as crypto_default_backend
 from fnmatch import fnmatch
 from paramiko.config import SSHConfig
 
@@ -125,6 +129,35 @@ def get(key, default=None):
     return render(value)
 
 
+def generate_key():
+    """
+    Generates and adds a key to the SSH agent.
+
+    """
+    key = rsa.generate_private_key(
+        backend=crypto_default_backend(),
+        public_exponent=65537,
+        key_size=4096,
+    )
+    private_key = key.private_bytes(
+        crypto_serialization.Encoding.PEM,
+        crypto_serialization.PrivateFormat.PKCS8,
+        crypto_serialization.NoEncryption(),
+    )
+    public_key = key.public_key().public_bytes(
+        crypto_serialization.Encoding.OpenSSH,
+        crypto_serialization.PublicFormat.OpenSSH,
+    )
+
+    with tempfile.NamedTemporaryFile(suffix='-ssha-temporary-key') as temp_key:
+        os.chmod(temp_key.name, 0o600)
+        with open(temp_key.name, 'w') as open_file:
+            open_file.write(private_key)
+        os.system('ssh-add -t 60 {}'.format(temp_key.name))
+
+    return public_key
+
+
 def load(name):
     """
     Loads a config from the settings.
@@ -165,6 +198,14 @@ def load(name):
             known_hosts_options = []
         proxy_command = ['ssh'] + known_hosts_options + ['-W', '%h:%p', '${bastion.address}']
         add('ssh.proxy_command', ssh.format_command(proxy_command))
+
+    # To support configs like this:
+    #  ssm.parameters.key = [${ssh.temporary_key}]
+    # If "ssh.temporary_key" has been used as a variable, then
+    # generate a temporary SSH key for use with the session and
+    # load it into the SSH agent
+    if is_used_as_variable('ssh.temporary_key'):
+        add('ssh.temporary_key', generate_key())
 
     # To support configs like this:
     #   ssm.parameters.key = ["$(cat '${ssh.identityfile_public}')"]
