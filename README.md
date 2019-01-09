@@ -199,13 +199,16 @@ ssha is not an SSH client; it instead figures out the right `ssh` command to run
 ```js
 ssh {
   /*
-  The default username/prefix can be overridden if necessary.
+  The default username can be overridden if necessary.
   If not defined, the default SSH user name is used.
   */
-  user{
-    name   = "ec2-user"
-    prefix = "ssha-"
-  }
+  username = "ec2-user"
+
+  /*
+  Optional prefix to prepend to the computed username
+  when username is not set.
+  */
+  username_prefix = "ssha-"
 
   /*
   ${ssm.host_keys_file} is a variable that resolves to a temporary file that
@@ -234,8 +237,6 @@ The use case for this is to run a command on the instance that creates a user an
 
 This requires the EC2 instances to be using the SSM agent, and it requires an SSM document that handles user creation.
 
-If no key parameter is provided, one will be generated per connection.
-
 ```js
 ssm {
   document {
@@ -252,6 +253,7 @@ ssm {
 Computed values:
 
 * `ssm.host_keys_file` - This is the path of a temporary file that is is generated from the SSM command output. For this to work, the SSM document command must print the server's SSH host keys to stdout. The host keys can be printed with `ssh-keyscan localhost`. Any other commands printing to stdout should be redirected to /dev/null so that the output contains the host keys and nothing else.
+* `ssh.temporary_key` - Generates a temporary key pair and adds it to the SSH agent for use with the session.
 
 #### Session Manager
 
