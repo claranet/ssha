@@ -49,7 +49,7 @@ def main():
                 else:
                     bastion = None
 
-                if config.get('ssm'):
+                if config.get('ssm.document'):
                     ssm.send_command(instance, bastion)
 
                 return ssh.connect(instance, bastion, args.command)
