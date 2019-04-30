@@ -5,7 +5,6 @@ import os
 import re
 import subprocess
 import tempfile
-import time
 
 from cryptography.hazmat.primitives import serialization as crypto_serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -80,7 +79,7 @@ def _is_used(data, key):
 
     """
     if isinstance(data, basestring):
-        for var in re.findall('\$\{(.+?)\}', data):
+        for var in re.findall(r'\$\{(.+?)\}', data):
             if var == key:
                 return True
     elif isinstance(data, dict):
@@ -255,7 +254,7 @@ def regions():
 
 def render(data):
     if isinstance(data, basestring):
-        for var in re.findall('\$\{(.+?)\}', data):
+        for var in re.findall(r'\$\{(.+?)\}', data):
             value = get(var)
             if value is None:
                 raise KeyError(var)
