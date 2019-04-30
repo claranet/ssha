@@ -46,7 +46,7 @@ def groups():
 def user():
     if 'user' not in _cache:
         creds = aws.credentials()
-        if creds.method == 'assume-role':
+        if creds.method in ('assume-role', 'custom-source-profile-mfa'):
             _cache['user'] = None
         else:
             print('[ssha] discovering iam user')

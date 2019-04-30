@@ -20,9 +20,9 @@ setup(
         'bin/ssha',
     ),
     install_requires=(
+        'boto-source-profile-mfa>=0.0.4',
         'botocore>=1.5.8',
         'boto3',
-        'boto3-session-cache',
         'cryptography',
         'paramiko',
         'pyhcl',

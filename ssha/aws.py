@@ -1,12 +1,11 @@
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from functools import wraps
+import boto_source_profile_mfa
 
-import boto3
-import boto3_session_cache
-import botocore.session
 from botocore.exceptions import ClientError, ParamValidationError
+
+from functools import wraps
 
 from . import config
 
@@ -49,11 +48,4 @@ def resource(*args, **kwargs):
 
 def session():
     aws_config = config.get('aws') or {}
-    profile = aws_config.pop('profile_name', None)
-    if 'botocore' not in _sessions:
-        print('[ssha] creating aws session')
-        _sessions['botocore'] = botocore.session.Session(profile=profile)
-        resolver = _sessions['botocore'].get_component('credential_provider')
-        provider = resolver.get_provider('assume-role')
-        provider.cache = boto3_session_cache.JSONFileCache()
-    return boto3.Session(botocore_session=_sessions['botocore'], **aws_config)
+    return boto_source_profile_mfa.get_session(**aws_config)
