@@ -1,3 +1,7 @@
+from boto_source_profile_mfa import SourceProfileMfaCredentialProvider
+
+from botocore.credentials import AssumeRoleProvider
+
 from . import aws, errors
 
 
@@ -46,7 +50,7 @@ def groups():
 def user():
     if 'user' not in _cache:
         creds = aws.credentials()
-        if creds.method in ('assume-role', 'custom-source-profile-mfa'):
+        if creds.method in (SourceProfileMfaCredentialProvider.METHOD, AssumeRoleProvider.METHOD):
             _cache['user'] = None
         else:
             print('[ssha] discovering iam user')
