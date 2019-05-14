@@ -20,7 +20,7 @@ setup(
         'bin/ssha',
     ),
     install_requires=(
-        'boto-source-profile-mfa>=0.0.4',
+        'boto-source-profile-mfa>=0.0.8',
         'botocore>=1.5.8',
         'boto3',
         'cryptography',
