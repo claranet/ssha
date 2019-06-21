@@ -142,11 +142,11 @@ def generate_key():
         crypto_serialization.Encoding.PEM,
         crypto_serialization.PrivateFormat.PKCS8,
         crypto_serialization.NoEncryption(),
-    )
+    ).decode()
     public_key = key.public_key().public_bytes(
         crypto_serialization.Encoding.OpenSSH,
         crypto_serialization.PublicFormat.OpenSSH,
-    )
+    ).decode()
 
     with tempfile.NamedTemporaryFile(suffix='-ssha-temporary-key') as temp_key:
         os.chmod(temp_key.name, 0o600)
