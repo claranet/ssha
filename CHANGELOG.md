@@ -1,3 +1,22 @@
+# 2.1.0
+
+* Add support for environment variables
+* Use first value from list of AWS profiles
+
+# 2.0.2
+
+* Fix Python 3 issue with auto generated SSH keys
+
+# 2.0.1
+
+* Upgrade boto-source-profile-mfa to fix python2 issue
+
+# 2.0.0
+
+* Auto generate SSH keys when one is not provided
+* Avoid sending SSM run command when there is no document specified
+* Use boto-source-profile-mfa for AWS credentials
+
 # 1.8.0
 
 * Add support for Session Manager
