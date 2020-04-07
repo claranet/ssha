@@ -338,6 +338,16 @@ iam group developers {
 }
 ```
 
+## Environment variables
+
+Environment variables can be accessed with the `env` object. If an environment variable is not set, it will result in an empty string.
+
+```js
+ssh {
+  username = "${env.SSH_USERNAME}"
+}
+```
+
 ## Contributing
 
 If you have an idea for a new feature, please submit an issue first to confirm whether a pull request would be accepted.

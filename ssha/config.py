@@ -25,6 +25,17 @@ _ssh_config = {}
 _tempfiles = {}
 
 
+class EnvironmentVariables(dict):
+    def __init__(self):
+        self.update(os.environ)
+
+    def get(self, key, default=""):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+
 def _exec(command):
     return subprocess.check_output(command, shell=True).strip().decode('utf-8')
 
@@ -35,7 +46,9 @@ def _get(key, default=None):
         value = value.get(key)
         if not value:
             break
-    return value or default
+    if value is not None:
+        return value
+    return default
 
 
 def _get_ssh_config(key):
@@ -180,6 +193,9 @@ def load(name):
         for group in iam.groups():
             if group in iam_group_specific_settings:
                 update(iam_group_specific_settings[group])
+
+    # Add environment variables.
+    add('env', EnvironmentVariables())
 
     # Default to SSH's default user.
     if not _get('ssh.username'):
