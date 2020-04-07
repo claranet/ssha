@@ -255,6 +255,19 @@ def load(name):
         _tempfiles['host_keys_file'] = tempfile.NamedTemporaryFile(suffix='-ssha-known-hosts')
         add('ssm.host_keys_file', _tempfiles['host_keys_file'].name)
 
+    # To support configs like this:
+    #  aws { profile_name = ["${env.AWS_PROFILE}", "dev"] }
+    # If "aws.profile_name" is a list, then find the first non-empty
+    # value and override the value with that.
+    aws_profile_names = get('aws.profile_name')
+    if isinstance(aws_profile_names, list):
+        for aws_profile_name in aws_profile_names:
+            if aws_profile_name:
+                break
+        else:
+            aws_profile_name = None
+        add("aws.profile_name", aws_profile_name)
+
 
 def names():
     ssha_settings = settings.all().get('ssha') or {}
