@@ -122,8 +122,12 @@ def session_manager_enabled(instance):
         return False
 
     # Check if agent is installed.
-    if not instance.get('AgentVersion'):
-        return False
+    ssm = aws.client('ssm')
+    instance_metadata = ssm.describe_instance_information(InstanceInformationFilterList=[{'key': 'InstanceIds', 'valueSet': [instance['InstanceId']]}])['InstanceInformationList']
+
+    if len(instance_metadata) != 0:
+        if not instance_metadata[0].get('AgentVersion'):
+            return False
 
     # Check if required plugin is installed.
     if os.system('which session-manager-plugin > /dev/null') != 0:
