@@ -97,6 +97,18 @@ aws {
 }
 ```
 
+The `profile_name` can optionally be defined as a list, and the first non-empty value will be used. This allows overriding the value with an environment variable.
+
+```js
+aws {
+  /*
+  If the PRODUCTION_AWS_PROFILE environment variable is set, then use
+  the value of that variable. Otherwise, use the "production" profile.
+  */
+  profile_name = ["${env.PRODUCTION_AWS_PROFILE}", "production"]
+}
+```
+
 ### `bastion {}`
 
 Instances in a private subnet might require a "bastion" or "jump" host. If the `bastion` block is defined, ssha will use it to find a bastion host to use when SSHing into any non-bastion host.
@@ -335,6 +347,16 @@ iam group developers {
   discover ec2 Tags {
     "SSH:developers" = ""
   }
+}
+```
+
+## Environment variables
+
+Environment variables can be accessed with the `env` object. If an environment variable is not set, it will result in an empty string.
+
+```js
+ssh {
+  username = "${env.SSH_USERNAME}"
 }
 ```
 
