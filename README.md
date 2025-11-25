@@ -352,3 +352,11 @@ If you have an idea for a new feature, please submit an issue first to confirm w
 Run `make test` to run unit tests.
 
 Run `tox` to run further tests.
+
+### Connectivity issues
+
+If you are experiencing connectivity issues, it is recommended to review the following configurations:
+
+* Verify the IAM roles associated with the instance.
+* Check the SSM document, in this case “add-ssh-key”.
+* Review the configured Security Groups.
