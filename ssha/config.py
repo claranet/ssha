@@ -25,6 +25,17 @@ _ssh_config = {}
 _tempfiles = {}
 
 
+class EnvironmentVariables(dict):
+    def __init__(self):
+        self.update(os.environ)
+
+    def get(self, key, default=""):
+        try:
+            return self[key]
+        except KeyError:
+            return default
+
+
 def _exec(command):
     return subprocess.check_output(command, shell=True).strip().decode('utf-8')
 
@@ -35,7 +46,9 @@ def _get(key, default=None):
         value = value.get(key)
         if not value:
             break
-    return value or default
+    if value is not None:
+        return value
+    return default
 
 
 def _get_ssh_config(key):
@@ -181,6 +194,9 @@ def load(name):
             if group in iam_group_specific_settings:
                 update(iam_group_specific_settings[group])
 
+    # Add environment variables.
+    add('env', EnvironmentVariables())
+
     # Default to SSH's default user.
     if not _get('ssh.username'):
         user = _get_ssh_config('user')
@@ -238,6 +254,19 @@ def load(name):
     if is_used_as_variable('ssm.host_keys_file') and not _get('ssm.host_keys_file'):
         _tempfiles['host_keys_file'] = tempfile.NamedTemporaryFile(suffix='-ssha-known-hosts')
         add('ssm.host_keys_file', _tempfiles['host_keys_file'].name)
+
+    # To support configs like this:
+    #  aws { profile_name = ["${env.AWS_PROFILE}", "dev"] }
+    # If "aws.profile_name" is a list, then find the first non-empty
+    # value and override the value with that.
+    aws_profile_names = get('aws.profile_name')
+    if isinstance(aws_profile_names, list):
+        for aws_profile_name in aws_profile_names:
+            if aws_profile_name:
+                break
+        else:
+            aws_profile_name = None
+        add("aws.profile_name", aws_profile_name)
 
 
 def names():
